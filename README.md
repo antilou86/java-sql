@@ -103,6 +103,8 @@ Take the following data and normalize it into a 3NF database.
 | Sam         | Ginger   | Dog      | Miss Kitty | Cat        | Bubble     | Fish       | Yes         | No           |
 
 ---
+
+
 ## Stretch Goals
 
 ### delete all customers that have no orders. Should delete 17 (or 18 if you haven't deleted the record added) records.
@@ -127,3 +129,112 @@ Take the following data and normalize it into a 3NF database.
   - the `id` should be the primary key for the table.
   - account `name` should be unique.
   - account `budget` is required.
+
+
+### find all customers that live in London. Returns 6 records.
+SELECT *
+FROM customers
+WHERE city = 'London'
+
+### find all customers with postal code 1010. Returns 3 customers.
+SELECT *
+FROM customers
+WHERE postal_code = '1010'
+
+### find the phone number for the supplier with the id 11. Should be (010) 9984510.
+SELECT company_name, contact_name, phone
+FROM suppliers
+WHERE supplier_id = '11'
+
+### list orders descending by the order date. The order with date 1998-05-06 should be at the top.
+SELECT *
+FROM orders
+ORDER BY order_date DESC
+
+### find all suppliers who have names longer than 20 characters.
+SELECT *
+FROM suppliers
+WHERE length(company_name) > 20
+
+### find all customers that include the word 'MARKET' in the contact title.
+SELECT *
+FROM customers
+WHERE upper(contact_title) LIKE '%MARKET%'
+
+### add a customer record for
+INSERT INTO customers (customer_id, company_name, contact_name, address, city, postal_code, country)
+VALUES ('SHIRE', 'The Shire', 'Bilbo Baggins', '1 Hobbit-Hole', 'Bag End', '111', 'Middle Earth')
+
+### update Bilbo Baggins record so that the postal code changes to "11122".
+UPDATE customers 
+SET postal_code = '11122'
+WHERE contact_name = 'Bilbo Baggins'
+
+### list orders grouped by customer showing the number of orders per customer
+SELECT COUNT(o.order_id), c.company_name
+FROM orders o JOIN customers c
+ON o.customer_id = c.customer_id
+GROUP BY c.company_name
+
+### list customers names and the number of orders per customer. Sort the list by number of orders in descending order. 
+SELECT COUNT(o.order_id), c.company_name
+FROM orders o JOIN customers c
+ON o.customer_id = c.customer_id
+GROUP BY c.company_name
+ORDER BY COUNT(o.order_id) DESC
+
+### list orders grouped by customer's city showing number of orders per city. 
+SELECT COUNT(o.order_id), c.city
+FROM orders o JOIN customers c
+ON o.ship_city = c.city
+GROUP BY c.city
+ORDER BY c.city
+
+
+
+
+### 3nf refactor
+---
+
+###pet owners
+
+| Person ID | Name | Yard | City |
+|-----------|------|------|------|
+| 1         | Jane | No   | Yes  |
+| 2         | Bob  | No   | No   |
+| 3         | Sam  | Yes  | No   |
+
+---
+
+###pet
+
+| Pet ID | Owner id | Name       | Type   |
+|--------|----------|------------|--------|
+| 1      | 1        | Ellie      | Dog    |
+| 2      | 1        | Tiger      | Cat    |
+| 3      | 1        | Toby       | Turtle |
+| 4      | 2        | Joe        | Horse  |
+| 5      | 3        | Ginger     | Dog    |
+| 6      | 3        | Miss Kitty | Cat    |
+| 7      | 3        | Bubble     | Fish   |
+
+---
+
+###Stretch
+
+### delete all customers that have no orders. Should delete 17 (or 18 if you haven't deleted the record added) records.
+DELETE
+FROM customers 
+WHERE customer_id IN 
+	(SELECT customers.customer_id 
+	FROM customers 
+	LEFT JOIN orders ON orders.customer_id = customers.customer_id
+	GROUP BY customers.customerid 
+	HAVING COUNT(order_id)=0);
+
+### Create Database and Table
+CREATE TABLE accounts(
+	account_id serial PRIMARY KEY,
+	name varchar(255) UNIQUE,
+	budget int NOT null
+)
